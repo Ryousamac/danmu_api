@@ -1,0 +1,28 @@
+name: Upstream Sync
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 每天凌晨 0 点同步
+  workflow_dispatch:    # 允许你在 Actions 页面手动点击按钮触发同步
+
+jobs:
+  sync_latest_from_upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Sync upstream changes
+        id: sync
+        uses: a206b/upstream-sync@v2.0
+        with:
+          upstream_repository: huangxd-/danmu_api  # 原作者仓库
+          upstream_branch: main                    # 原作者分支
+          target_branch: main                      # 你的分支
+          force: false                             # 如果有冲突不强制覆盖
+
+      - name: New commits found
+        if: steps.sync.outputs.has_new_commits == 'true'
+        run: echo "New commits were found and synced."
